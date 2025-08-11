@@ -16,7 +16,7 @@ DB_NAME="hubstaff_clone"
 FRONTEND_URL="http://localhost:3000"
 
 # File Storage
-STORAGE_TYPE="local"  # or "aws_s3"
+STORAGE_TYPE="local"  # or "supabase"
 UPLOAD_DIR="uploads"
 MAX_FILE_SIZE="10485760"  # 10MB
 
@@ -45,14 +45,13 @@ If not configured, invitations will be printed to console.
 
 ### 3. AWS S3 Configuration (Optional)
 
-For cloud storage, configure AWS S3:
+For cloud storage, configure Supabase Storage:
 
 ```bash
-STORAGE_TYPE="aws_s3"
-AWS_ACCESS_KEY_ID="your-access-key"
-AWS_SECRET_ACCESS_KEY="your-secret-key"
-AWS_REGION="us-east-1"
-S3_BUCKET_NAME="your-bucket-name"
+STORAGE_TYPE="supabase"
+SUPABASE_URL="https://your-project.supabase.co"
+SUPABASE_KEY="your-anon-key"
+SUPABASE_BUCKET="your-bucket-name"
 ```
 
 ## Database Setup

@@ -38,6 +38,8 @@ export const DashboardPage = ({ user, onLogout }) => {
       const users = usersResponse.data;
       const projects = projectsResponse.data;
 
+      console.log('Dashboard data fetched:', { analytics, users, projects }); // Debug log
+      
       const widgets = [
         { title: "Hours Worked", value: `${(analytics.user_stats?.total_hours || 0).toFixed(2)}h`, subtitle: "This month", icon: "⏰", color: "blue" },
         { title: "Active Workers", value: users.filter(u => u.status === 'active').length, subtitle: "Right now", icon: "👥", color: "green" },

@@ -44,11 +44,11 @@ FRONTEND_URL="https://yourdomain.com"
 ENVIRONMENT="production"
 ALLOWED_ORIGINS="https://yourdomain.com,https://app.yourdomain.com"
 
-# File Storage (for production, consider AWS S3)
-STORAGE_TYPE="aws_s3"
-AWS_ACCESS_KEY_ID="your-aws-key"
-AWS_SECRET_ACCESS_KEY="your-aws-secret"
-S3_BUCKET_NAME="your-bucket-name"
+# File Storage (for production, consider Supabase Storage)
+STORAGE_TYPE="supabase"
+SUPABASE_URL="https://your-project.supabase.co"
+SUPABASE_KEY="your-anon-key"
+SUPABASE_BUCKET="your-bucket-name"
 
 # Email Configuration
 SMTP_HOST="smtp.gmail.com"

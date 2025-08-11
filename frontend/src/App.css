@@ -4,6 +4,15 @@
     line-height: 1.6;
 }
 
+/* Targeted font weight overrides - reduce boldness without affecting layout */
+.font-bold {
+    font-weight: 500 !important; /* Reduce from 700 to 500 */
+}
+
+.font-semibold {
+    font-weight: 400 !important; /* Reduce from 600 to 400 */
+}
+
 /* Custom gradient backgrounds */
 .gradient-blue-purple {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -39,7 +48,7 @@
 .timer-display {
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
     font-size: 3rem;
-    font-weight: 700;
+    font-weight: 600; /* Slightly reduced from 700 but still prominent */
     color: #1a202c;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }

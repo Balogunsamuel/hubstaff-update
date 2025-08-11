@@ -20,15 +20,14 @@ class Settings:
     ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "")
     
     # File storage settings
-    STORAGE_TYPE: str = os.getenv("STORAGE_TYPE", "local")  # local, aws_s3, gcp, azure
+    STORAGE_TYPE: str = os.getenv("STORAGE_TYPE", "local")  # local, supabase, gcp, azure
     UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", str(ROOT_DIR / "uploads"))
     MAX_FILE_SIZE: int = int(os.getenv("MAX_FILE_SIZE", "10485760"))  # 10MB default
     
-    # AWS S3 settings (if using S3)
-    AWS_ACCESS_KEY_ID: str = os.getenv("AWS_ACCESS_KEY_ID", "")
-    AWS_SECRET_ACCESS_KEY: str = os.getenv("AWS_SECRET_ACCESS_KEY", "")
-    AWS_REGION: str = os.getenv("AWS_REGION", "us-east-1")
-    S3_BUCKET_NAME: str = os.getenv("S3_BUCKET_NAME", "")
+    # Supabase Storage settings (if using Supabase)
+    SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
+    SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", "")
+    SUPABASE_BUCKET: str = os.getenv("SUPABASE_BUCKET", "")
     
     # Email settings (for invitations)
     SMTP_HOST: str = os.getenv("SMTP_HOST", "")

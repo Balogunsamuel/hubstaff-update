@@ -6,6 +6,7 @@ from typing import Optional, BinaryIO
 from fastapi import UploadFile, HTTPException, status
 from config import settings
 import logging
+from supabase import create_client, Client
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,12 @@ class StorageService:
     def __init__(self):
         self.storage_type = settings.STORAGE_TYPE
         self.upload_dir = settings.uploads_path
+        
+        # Initialize Supabase client if using Supabase storage
+        if self.storage_type == "supabase":
+            if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
+                raise StorageError("Supabase URL and KEY must be set for Supabase storage")
+            self.supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
         
     async def save_file(self, file: UploadFile, subfolder: str = "", user_id: str = "") -> str:
         """
@@ -46,8 +53,8 @@ class StorageService:
             
             if self.storage_type == "local":
                 return await self._save_local(file, subfolder, user_id, unique_filename)
-            elif self.storage_type == "aws_s3":
-                return await self._save_s3(file, subfolder, user_id, unique_filename)
+            elif self.storage_type == "supabase":
+                return await self._save_supabase(file, subfolder, user_id, unique_filename)
             else:
                 raise StorageError(f"Unsupported storage type: {self.storage_type}")
                 
@@ -77,12 +84,35 @@ class StorageService:
         relative_path = full_path.relative_to(self.upload_dir)
         return f"/uploads/{relative_path}"
     
-    async def _save_s3(self, file: UploadFile, subfolder: str, user_id: str, filename: str) -> str:
-        """Save file to AWS S3 (placeholder implementation)"""
-        # This would require boto3 implementation
-        # For now, fall back to local storage
-        logger.warning("S3 storage not implemented, falling back to local storage")
-        return await self._save_local(file, subfolder, user_id, filename)
+    async def _save_supabase(self, file: UploadFile, subfolder: str, user_id: str, filename: str) -> str:
+        """Save file to Supabase Storage"""
+        try:
+            # Create file path
+            file_path = subfolder
+            if user_id:
+                file_path = f"{file_path}/{user_id}" if file_path else user_id
+            file_path = f"{file_path}/{filename}" if file_path else filename
+            
+            # Read file content
+            content = await file.read()
+            
+            # Upload to Supabase
+            response = self.supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
+                path=file_path,
+                file=content,
+                file_options={"content-type": file.content_type or "application/octet-stream"}
+            )
+            
+            if response.error:
+                raise StorageError(f"Failed to upload to Supabase: {response.error}")
+            
+            # Return the public URL
+            public_url_response = self.supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(file_path)
+            return public_url_response
+            
+        except Exception as e:
+            logger.error(f"Error uploading to Supabase: {e}")
+            raise StorageError(f"Failed to upload file to Supabase: {e}")
     
     def _get_file_extension(self, filename: Optional[str]) -> str:
         """Extract file extension from filename"""
@@ -106,7 +136,17 @@ class StorageService:
                 if full_path.exists():
                     full_path.unlink()
                     return True
-            # Add S3 deletion logic here if needed
+            elif self.storage_type == "supabase":
+                # Extract file path from URL if it's a full URL
+                if file_path.startswith("http"):
+                    # Extract path from Supabase URL
+                    path_parts = file_path.split(f"{settings.SUPABASE_BUCKET}/")[-1]
+                else:
+                    path_parts = file_path.lstrip("/")
+                
+                response = self.supabase.storage.from_(settings.SUPABASE_BUCKET).remove([path_parts])
+                return not response.error
+            
             return False
         except Exception as e:
             logger.error(f"Error deleting file {file_path}: {e}")
@@ -127,9 +167,12 @@ class StorageService:
         
         if self.storage_type == "local":
             return f"{settings.FRONTEND_URL}{file_path}"
-        elif self.storage_type == "aws_s3":
-            # Return S3 URL
-            return f"https://{settings.S3_BUCKET_NAME}.s3.{settings.AWS_REGION}.amazonaws.com{file_path}"
+        elif self.storage_type == "supabase":
+            # If it's already a full URL, return as is
+            if file_path.startswith("http"):
+                return file_path
+            # Otherwise, generate public URL
+            return self.supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(file_path.lstrip("/"))
         
         return file_path
 
